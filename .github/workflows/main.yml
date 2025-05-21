@@ -1,0 +1,70 @@
+name: Build extension
+
+permissions:
+  contents: read 
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '37 22 * * *'
+
+jobs:
+  builda:
+    runs-on: ubuntu-latest
+    permissions:                # Job-level permissions configuration starts here
+      contents: write           # 'write' access to repository contents
+      pull-requests: write      # 'write' access to pull requests
+    strategy:
+      fail-fast: false
+        
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+        fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+
+    - name: Set version string
+      run: |
+        unix_time_ns=$(($(date +%s%N)/1000000))
+        echo "Unix time in nanoseconds is ${unix_time_ns}"
+        extension_version="${unix_time_ns:0:4}.${unix_time_ns:4:4}.${unix_time_ns:8:4}.${unix_time_ns:12:4}"
+        echo "Extension version will be ${extension_version}"
+        echo "extension_version=${extension_version}" >> $GITHUB_ENV
+        
+    - name: Update version in update.xml and manifest.json
+      run: |
+        tmpfile=$(mktemp)
+        jq ".version = \"$extension_version\"" extension/manifest.json > "$tmpfile" && mv "$tmpfile" extension/manifest.json
+        cat extension/manifest.json
+        update_xml=$(cat update.xml.template)
+        update_xml="${update_xml/EXTENSION_VERSION/"$extension_version"}"
+        mkdir -vp hosted
+        echo -e "$update_xml" > hosted/update.xml
+        cat hosted/update.xml
+
+    - name: Build extension with Chrome
+      env:
+          EXTENSION_KEY: ${{ secrets.EXTENSION_KEY }}
+      run: |
+        key_file="${HOME}/ext.pem"
+        echo -e "$EXTENSION_KEY" > "$key_file"
+        file "$key_file"
+        google-chrome-stable --pack-extension=./extension --pack-extension-key="$key_file"
+        mv -v extension.crx hosted/di.crx
+
+    - name: Commit files
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add --all
+        git add *
+        git diff --quiet && git diff --staged --quiet || git commit -am "Publish  ${extension_version} [ci skip]"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }} 
+        
+        
