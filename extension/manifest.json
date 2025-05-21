@@ -20,9 +20,6 @@
     "identity",
     "identity.email"
   ],
-  "storage": {
-    "managed_schema": "schema.json"
-  },
   "update_url": "https://jay0lee.github.io/detect-incognito/hosted/update.xml",
   "version": "1741.7013.0690.1"
 }
