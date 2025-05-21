@@ -4,6 +4,7 @@
       "16": "images/icon16.png",
       "24": "images/icon24.png",
       "32": "images/icon32.png"
+    },
     "default_popup": "popup.html"
     },
   "description": "Experimental ChromeOS extension to detect Incognito mode usage.s",
