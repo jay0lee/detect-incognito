@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
   <app appid='andlhhngmmodkkmfocigmdfmbgdfjdmj'>
-	  <updatecheck codebase='https://jay0lee.github.io/detect-incognito/hosted/di.crx' version='1758.1488.0240.0' />
+	  <updatecheck codebase='https://jay0lee.github.io/detect-incognito/hosted/di.crx' version='1758.2352.2281.0' />
   </app>
 </gupdate>
